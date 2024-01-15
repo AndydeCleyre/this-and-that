@@ -11,7 +11,6 @@ TODO:
   - editing, feedback, editing
   - videos/gifs
   - bonus section
-  - adjust table of contents
 ```
 
 [Broot](https://dystroy.org/broot/) is a great file manager TUI
