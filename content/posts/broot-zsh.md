@@ -5,6 +5,15 @@ tags = ['broot', 'zsh']
 draft = true
 +++
 
+```
+TODO:
+
+  - editing, feedback, editing
+  - videos/gifs
+  - bonus section
+  - adjust table of contents
+```
+
 [Broot](https://dystroy.org/broot/) is a great file manager TUI
 which can be adapted for very specific workflows.
 But it takes some configuration up front to get things going,
