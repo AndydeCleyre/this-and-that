@@ -1,7 +1,7 @@
 # https://blowfish.page/docs/getting-started/
 
 theme = "blowfish"
-baseURL = "https://AndydeCleyre.github.io/thisandthat"
+baseURL = "https://AndydeCleyre.github.io/this-and-that"
 languageCode = "en"
 defaultContentLanguage = "en"
 
