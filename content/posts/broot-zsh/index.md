@@ -9,7 +9,6 @@ draft = true
 TODO:
 
   - editing, feedback, editing
-  - videos/gifs
   - bonus section
 ```
 
@@ -28,15 +27,7 @@ I'll go over some of my own configurations for using it from Zsh:
   - [basic broot usage](#basic-broot-usage)
 - Seamless Zsh Hookups:
   - [drill down and fuzzy filter to set your working folder](#drill-down)
-  - [complete a file argument](#insert-or-complete-paths) (insert path, even if it's partially typed)
-
-```
-TODO: vid of folder drill-down
-
-TODO: vid of completion
-
-TODO: vid of completion with content filter
-```
+  - [complete a file argument](#insert-or-complete-paths)
 
 My dotfiles containing the snippets in this post
 are on GitHub at
@@ -45,6 +36,20 @@ and [dotfiles-zsh/broot.zsh](https://github.com/AndydeCleyre/dotfiles-zsh/blob/e
 
 If you already use broot, skip to [Drill down](#drill-down).
 To follow along, go ahead and [install broot](https://dystroy.org/broot/install/) first.
+
+# Demo videos
+
+## Drill down to change folder
+
+{{< video src="drill_down" >}}
+
+## Complete a partially typed argument with a path filter
+
+{{< video src="complete_partial_with_path_filter" >}}
+
+## Complete with a file-content filter
+
+{{< video src="complete_with_content_filter" >}}
 
 # Wrap broot in a Zsh function
 
