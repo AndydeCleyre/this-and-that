@@ -2,6 +2,7 @@
 title = 'Using broot as an fzf-like path completer and interactive folder jumper in Zsh'
 date = 2024-01-15T14:17:11-05:00
 tags = ['broot', 'zsh']
+showComments = true
 draft = true
 +++
 
