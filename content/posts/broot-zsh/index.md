@@ -273,7 +273,7 @@ it has to come first.
 
 ## Filters
 
-As you type anything but space, slash, or colon,
+As you type almost anything but space, slash, or colon,
 files and folders are fuzzy filtered by pathname.
 
 But you can change this by prefixing your filter with
@@ -557,6 +557,41 @@ as by default it has no "invocation" defined.
 
 ## File selection launcher
 
+I call it `.zle_insert-path-broot`, and bind it to `ctrl`+`/`.
+
+### Simple file selection launcher
+
+```zsh
+.zle_insert-path-broot () {
+  echoti rmkx
+  local locations=(${(f)"$(
+    <$TTY broot --color yes --conf "${HOME}/.config/broot/select.hjson;${HOME}/.config/broot/conf.hjson"
+  )"})
+  locations=(${(q-)locations})
+  LBUFFER+="$locations "
+}
+zle -N       .zle_insert-path-broot
+bindkey '^_' .zle_insert-path-broot  # ctrl+/
+```
+
+The `(f)` splits broot's output into lines,
+which we store as an array.
+The `(q-)` adds shell quoting to any array item which needs it,
+before we flatten the array into a space-separated string we cram into
+`LBUFFER`, which corresponds to all text left of the cursor on our input line.
+
+This is good enough to be useful,
+but it can be much better.
+
+### Complicated file selection launcher
+
+We'll improve on this by handling any
+already partially typed path, using it to:
+
+- guess a starting filter
+- guess a starting folder
+- guess whether we should see hidden files
+
 At its core,
 the launcher will run:
 
@@ -570,7 +605,6 @@ broot \
   $start_dir
 ```
 
-I call it `.zle_insert-path-broot`, and bind it to `ctrl`+`/`.
 It's big, so let's see the whole thing first,
 then take it piece by piece.
 
