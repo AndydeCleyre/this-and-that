@@ -554,7 +554,6 @@ verbs:
   {
     key: enter
     cmd: ":pright;:print_path"
-    leave_broot: true
   }
 ]
 ```
