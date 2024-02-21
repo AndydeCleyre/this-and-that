@@ -218,6 +218,10 @@ verbs:
     internal: ":toggle_files"
   }
   {
+    key: alt-s
+    internal: ":toggle_sizes"
+  }
+  {
     invocation: mkcd {new_dir}
     cmd: ":mkdir {new_dir};:focus {new_dir}"
   }
