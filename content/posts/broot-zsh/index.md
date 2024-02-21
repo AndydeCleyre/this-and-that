@@ -429,6 +429,7 @@ but let's see the whole thing:
     --conf "${XDG_CONFIG_HOME:-${HOME}/.config}/broot/select-folder.hjson;${XDG_CONFIG_HOME:-${HOME}/.config}/broot/conf.hjson"
   )"
   if (( $+functions[.zle_redraw-prompt] ))  zle .zle_redraw-prompt
+  if (( $+functions[_zsh_highlight]     ))  _zsh_highlight
 }
 zle -N            .zle_cd-broot
 bindkey '^[[1;3B' .zle_cd-broot  # alt+down
@@ -493,6 +494,12 @@ of [Powerlevel10k](https://github.com/romkatv/powerlevel10k/) fame.
 }
 zle -N .zle_redraw-prompt
 ```
+
+### `_zsh_highlight`?
+
+This is only useful if you use
+[fast-syntax-highlighting](https://github.com/zdharma-continuum/fast-syntax-highlighting),
+and forces f-s-h to rescan and recolor the input line, now that it's changed.
 
 ### `${XDG_CONFIG_HOME:-${HOME}/.config}`?
 
