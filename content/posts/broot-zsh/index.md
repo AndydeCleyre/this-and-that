@@ -372,27 +372,23 @@ verbs:
     key: enter
     internal: ":print_path"
     apply_to: directory
-    leave_broot: true
   }
   {
     key: enter
     cmd: ":parent;:print_path"
     apply_to: file
-    leave_broot: true
   }
   {
     key: alt-enter
     invocation: cd
     internal: ":print_path"
     apply_to: directory
-    leave_broot: true
   }
   {
     key: alt-enter
     invocation: cd
     cmd: ":parent;:print_path"
     apply_to: file
-    leave_broot: true
   }
 ]
 ```
