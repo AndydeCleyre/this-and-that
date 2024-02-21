@@ -3,15 +3,8 @@ title = 'Using broot as an fzf-like path completer and interactive folder jumper
 date = 2024-01-15T14:17:11-05:00
 tags = ['broot', 'zsh']
 showComments = true
-draft = true
+draft = false
 +++
-
-```
-TODO:
-
-  - editing, feedback, editing
-  - bonus section
-```
 
 [Broot](https://dystroy.org/broot/) is a great file manager TUI
 which can be adapted for very specific workflows.
@@ -908,64 +901,73 @@ It's a bug, but I can live with it.
   if (( $+functions[_zsh_highlight] ))  _zsh_highlight
 ```
 
-This last bit is only helpful if you use
+As we saw earlier, this last bit is only helpful if you use
 [fast-syntax-highlighting](https://github.com/zdharma-continuum/fast-syntax-highlighting),
 and forces f-s-h to rescan and recolor the input line, now that it's changed.
 
 # Bonus: Rewrite br to avoid eval
 
----
+{{< alert >}}
+This method only works with `broot>1.33.1`.
+{{< /alert >}}
 
-TODO: This section cannot be completed until I resolve a question:
+Instead of `--outcmd`,
+we'll use a new option, `--verb-output`,
+and a new "internal," `write_output`.
 
-> Is there a way to control or bypass the quoting that is applied when writing the `--outcmd` file, or the `{directory}` argument?
-> `cd` fails on a folder that requires quoting, such as one named `with " a quote and spaces`, where the file gets written like:
-> `cd "/home/andy/.config/broot/with " a quote and spaces"`
-> resulting in `(eval):1: unmatched "`
+First, we add a verb definition to our `verbs.hjson` like:
 
----
+```yml
+{
+  key: alt-enter
+  invocation: cd
+  cmd: ":write_output {directory};:quit"
+}
+```
 
-Here's our custom `br` definition from earlier:
+This is will write the focused folder path to a file (specified by `--verb-output`, coming up soon).
+
+Now we can update our function to:
 
 ```zsh
-# -- Run broot, eval cmdfile if successful --
+zmodload zsh/mapfile
+
+# -- Run broot, cd into pathfile if successful --
+# Depends: zmapfile
 br () {  # [<broot-opt>...]
   emulate -L zsh
 
-  local cmdfile=$(mktemp)
-  trap "rm ${(q-)cmdfile}" EXIT INT QUIT
-  if { broot --outcmd "$cmdfile" $@ } {
-    if [[ -r $cmdfile ]]  eval "$(<$cmdfile)"
+  local pathfile=$(mktemp)
+  trap "rm ${(q-)pathfile}" EXIT INT QUIT
+  if { broot --verb-output "$pathfile" $@ } {
+    if [[ -r $pathfile ]] {
+      local folder=${mapfile[$pathfile]}
+      if [[ $folder ]]  cd $folder
+    }
   } else {
     return
   }
 }
 ```
 
-We're still going to use `--outcmd`,
-but instead of putting a command in that file,
-we'll just put a folder path (if anything).
+It hasn't changed much,
+but here we use `--verb-output` to tell broot what tempfile to write to,
+then `cd` into whatever path that file contains, if the file is written at all (and non-empty).
 
-To do that, we can add a verb definition to our `verbs.hjson` like:
-
-```yml
-{
-  key: alt-enter
-  invocation: cd
-  external: "{directory}"
-  from_shell: true
-}
-```
-
-This is what `alt`+`enter` and the `cd` invocation already do,
-except the `external` value is normally `cd {directory}`.
-
-Now we can update our function to:
+Additionally, a micro-optimization has been used to avoid a subshell;
+we *could* use
 
 ```zsh
+local folder=$(<$pathfile)
 ```
 
-And here's a diff view of change:
+But instead we load the [zsh/mapfile module](https://linux.die.net/man/1/zshmodules),
+and access the file contents as the value in a magic dictionary,
+which maps file names to contents.
 
-```diff
-```
+# That's all, folks!
+
+That's all I have to say about this for now,
+and if you've gotten this far, I hope some part of this was useful to you.
+
+Did I make a mistake? Have I been unclear? Yell at me in the comments!
