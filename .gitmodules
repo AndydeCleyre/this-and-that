@@ -1,7 +1,9 @@
 [submodule "themes/blowfish"]
-	path = themes/blowfish
-	url = https://github.com/nunocoracao/blowfish
-	branch = main
+  path = themes/blowfish
+  url = https://github.com/nunocoracao/blowfish
+  branch = main
+  shallow = true
 [submodule "themes/hugo-video"]
-	path = themes/hugo-video
-	url = https://github.com/martignoni/hugo-video.git
+  path = themes/hugo-video
+  url = https://github.com/martignoni/hugo-video.git
+  shallow = true
