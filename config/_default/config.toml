@@ -7,8 +7,8 @@ languageCode = "en"
 defaultContentLanguage = "en"
 
 enableRobotsTXT = true
-paginate = 10
-summaryLength = 0
+paginate = 12
+summaryLength = 48
 
 buildDrafts = false
 buildFuture = false

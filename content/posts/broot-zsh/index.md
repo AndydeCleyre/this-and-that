@@ -25,8 +25,8 @@ I'll go over some of my own configurations for using it from Zsh:
 
 My dotfiles containing the snippets in this post
 are on GitHub at
-[dotfiles-broot](https://github.com/AndydeCleyre/dotfiles-broot/tree/86522f7381e5402b4e37339d520cc5b7977328e0)
-and [dotfiles-zsh/broot.zsh](https://github.com/AndydeCleyre/dotfiles-zsh/blob/e2ab08ebc5da5b6f3c3f9ed345f47f5a99b718f6/broot.zsh).
+[dotfiles-broot](https://github.com/AndydeCleyre/dotfiles-broot/)
+and [dotfiles-zsh/broot.zsh](https://github.com/AndydeCleyre/dotfiles-zsh/blob/main/broot.zsh).
 
 If you already use broot, skip to [Drill down](#drill-down).
 To follow along, go ahead and [install broot](https://dystroy.org/broot/install/) first.
@@ -120,7 +120,7 @@ $ broot --set-install-state installed
 
 ### Room for improvement
 
-While writing this post I realized that `eval` is overkill for the task,
+While writing this post I remembered that `eval` is overkill for the task,
 given that the `cmdfile` only ever contains a `cd` command.
 I'll add [a bonus section at the end of this post](#bonus-rewrite-br-to-avoid-eval),
 rewriting `br` to avoid `eval`.
@@ -279,7 +279,8 @@ But you can change this by prefixing your filter with
 prefix  |  filter by  |  filter syntax
 ---  | --- | ---
 None  |  path  |  fuzzy match
-`/`  |  file path  |  regular expression
+`f/`  |  file name  |  fuzzy match
+`/`  |  file name  |  regular expression
 `c/`  |  file *content*  |  literal
 `cr/`  |  file *content*  |  regular expression
 
@@ -405,7 +406,9 @@ broot \
 ```
 
 I bind it to `alt`+`down`,
-to match other navigation bindings I have for Zsh (`alt`+`up`/`left`/`right`).
+to match
+[other navigation bindings I have](https://github.com/AndydeCleyre/dotfiles-zsh/blob/main/clear_and_foldernav.zsh#L38)
+for Zsh (`alt`+`up`/`left`/`right`).
 
 Some funny bits need explaining,
 but let's see the whole thing:
@@ -428,7 +431,35 @@ zle -N            .zle_cd-broot
 bindkey '^[[1;3B' .zle_cd-broot  # alt+down
 ```
 
-To skip the explanations,
+### `.zle_redraw-prompt`?
+
+Your fancy Zsh prompt may rely on certain hooks being run
+after a change of your current working directory,
+and then need to get poked by the ZLE system to get redrawn.
+
+I lifted and restyled
+[a function to do just that](https://github.com/romkatv/zsh4humans/blob/v2/fn/-z4h-redraw-prompt)
+from [Zsh for Humans](https://github.com/romkatv/zsh4humans) by Roman Perepelitsa,
+of [Powerlevel10k](https://github.com/romkatv/powerlevel10k/) fame.
+
+```zsh
+# -- Refresh prompt, rerunning any hooks --
+# Credit: Roman Perepelitsa
+# Original: https://github.com/romkatv/zsh4humans/blob/v2/fn/-z4h-redraw-prompt
+.zle_redraw-prompt () {
+  for 1 ( chpwd $chpwd_functions precmd $precmd_functions ) {
+    if (( $+functions[$1] ))  $1 &>/dev/null
+  }
+  zle .reset-prompt
+  zle -R
+}
+zle -N .zle_redraw-prompt
+```
+
+Drop this in your `.zshrc` to ensure
+the prompt reflects your newly-changed working directory.
+
+To skip the rest of the `.zle_cd-broot` explanations,
 jump to [complete a file argument](#insert-or-complete-paths).
 
 ### `echoti rmkx`?
@@ -462,31 +493,6 @@ As the [`zshzle` manual](https://linux.die.net/man/1/zshzle) says:
 the way it usually is.
 
 Without doing this, you may find broot unresponsive to your keyboard input.
-
-### `.zle_redraw-prompt`?
-
-Your fancy Zsh prompt may rely on certain hooks being run
-after a change of your current working directory,
-and then need to get poked by the ZLE system to get redrawn.
-
-I lifted and restyled
-[a function to do just that](https://github.com/romkatv/zsh4humans/blob/v2/fn/-z4h-redraw-prompt)
-from [Zsh for Humans](https://github.com/romkatv/zsh4humans) by Roman Perepelitsa,
-of [Powerlevel10k](https://github.com/romkatv/powerlevel10k/) fame.
-
-```zsh
-# -- Refresh prompt, rerunning any hooks --
-# Credit: Roman Perepelitsa
-# Original: https://github.com/romkatv/zsh4humans/blob/v2/fn/-z4h-redraw-prompt
-.zle_redraw-prompt () {
-  for 1 ( chpwd $chpwd_functions precmd $precmd_functions ) {
-    if (( $+functions[$1] ))  $1 &>/dev/null
-  }
-  zle .reset-prompt
-  zle -R
-}
-zle -N .zle_redraw-prompt
-```
 
 ### `_zsh_highlight`?
 
