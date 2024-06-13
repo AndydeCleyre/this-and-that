@@ -931,7 +931,7 @@ First, we add a verb definition to our `verbs.hjson` like:
 }
 ```
 
-This is will write the focused folder path to a file (specified by `--verb-output`, coming up soon).
+This will write the focused folder path to a file (specified by `--verb-output`, coming up soon).
 
 Now we can update our function to:
 
