@@ -7,11 +7,13 @@ languageCode = "en"
 defaultContentLanguage = "en"
 
 enableRobotsTXT = true
-paginate = 12
 summaryLength = 48
 
 buildDrafts = false
 buildFuture = false
+
+[pagination]
+pagerSize = 12
 
 [imaging]
 anchor = "Center"
@@ -28,20 +30,16 @@ filename = "sitemap.xml"
 priority = 0.5
 
 [outputs]
-home = [
-    "HTML",
-    "RSS",
-    "JSON",
-]
+home = ["HTML", "RSS", "JSON"]
 
 [related]
 threshold = 0
 toLower = false
 indices = [
-    { name = "tags", weight = 100 },
-    { name = "categories", weight = 100 },
-    { name = "series", weight = 50 },
-    { name = "authors", weight = 20 },
-    { name = "date", weight = 10 },
-    { applyFilter = false, name = "fragmentrefs", type = "fragments", weight = 10 },
+  { name = "tags", weight = 100 },
+  { name = "categories", weight = 100 },
+  { name = "series", weight = 50 },
+  { name = "authors", weight = 20 },
+  { name = "date", weight = 10 },
+  { applyFilter = false, name = "fragmentrefs", type = "fragments", weight = 10 },
 ]
