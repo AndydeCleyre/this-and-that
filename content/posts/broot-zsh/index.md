@@ -407,7 +407,7 @@ broot \
 
 I bind it to `alt`+`down`,
 to match
-[other navigation bindings I have](https://github.com/AndydeCleyre/dotfiles-zsh/blob/main/clear_and_foldernav.zsh#L38)
+[other navigation bindings I have](https://github.com/AndydeCleyre/dotfiles-zsh/blob/main/clear_and_foldernav.zsh#L48)
 for Zsh (`alt`+`up`/`left`/`right`).
 
 Some funny bits need explaining,
@@ -638,10 +638,10 @@ One known limitation is that it expects no newlines within your filenames.
     partial=${partial/#(\$HOME\/|\~\/)/~\/}
 
     # Store a sanitized version for broot search (broot_search)
-    broot_search=${partial/#~\/}                 # strip leading '~/'
-    broot_search=${broot_search//( |:|..\/|\;)}  # strip ' ', ':', '../', ';'
-    broot_search=${broot_search//.\/}            # strip './'
-    broot_search=${broot_search//\//\\/}         # replace '/' with '\/'
+    broot_search=${partial/#~\/}                          # strip leading '~/'
+    broot_search=${broot_search//( |:|..\/|\;|\\|\'|\")}  # strip ' ', ':', '../', ';', '\', "'", '"'
+    broot_search=${broot_search//.\/}                     # strip './'
+    broot_search=${broot_search//\//\\/}                  # replace '/' with '\/'
 
   }
 
@@ -764,10 +764,10 @@ we replace that bit with the full path of your home folder.
 
 ```zsh
     # Store a sanitized version for broot search (broot_search)
-    broot_search=${partial/#~\/}                 # strip leading '~/'
-    broot_search=${broot_search//( |:|..\/|\;)}  # strip ' ', ':', '../', ';'
-    broot_search=${broot_search//.\/}            # strip './'
-    broot_search=${broot_search//\//\\/}         # replace '/' with '\/'
+    broot_search=${partial/#~\/}                          # strip leading '~/'
+    broot_search=${broot_search//( |:|..\/|\;|\\|\'|\")}  # strip ' ', ':', '../', ';', '\', "'", '"'
+    broot_search=${broot_search//.\/}                     # strip './'
+    broot_search=${broot_search//\//\\/}                  # replace '/' with '\/'
 
   }
 ```
@@ -776,7 +776,7 @@ To turn our `partial` path into a good broot filter string,
 we:
 
 - remove any leading home path
-- remove any of these substrings `' ', ':', '../', ';', './'`
+- remove any of these substrings `' ', ':', '../', ';', '\', "'", '"', './'`
 - escape/quote any remaining forward slashes
 
 Those forward slashes will match folder boundaries,
@@ -941,10 +941,10 @@ zmodload zsh/mapfile
 # -- Run broot, cd into pathfile if successful --
 # Depends: zmapfile
 br () {  # [<broot-opt>...]
-  emulate -L zsh
+  emulate -L zsh -o localtraps
 
   local pathfile=$(mktemp)
-  trap "rm ${(q-)pathfile}" EXIT INT QUIT
+  trap "=rm ${(q-)pathfile}" EXIT INT QUIT
   if { broot --verb-output "$pathfile" $@ } {
     if [[ -r $pathfile ]] {
       local folder=${mapfile[$pathfile]}
