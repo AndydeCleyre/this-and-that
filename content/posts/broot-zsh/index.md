@@ -168,7 +168,7 @@ in [Hjson](https://hjson.github.io/) format.
 You can learn about the possibilities by reading the comments therein,
 and [the config docs](https://dystroy.org/broot/conf_file).
 
-So you've now got `config.hjson`,
+So you've now got `conf.hjson`,
 which imports a list of ["verb"](https://dystroy.org/broot/conf_verbs/)
 definitions from `verbs.hjson`.
 
@@ -210,11 +210,11 @@ verbs:
 [
   {
     key: alt-f
-    internal: ":toggle_files"
+    internal: toggle_files
   }
   {
     key: alt-s
-    internal: ":toggle_sizes"
+    internal: toggle_sizes
   }
   {
     invocation: mkcd {new_dir}
@@ -227,28 +227,37 @@ verbs:
   }
   {
     key: alt-up
-    internal: ":up_tree"
+    internal: up_tree
   }
   {
     key: alt-left
-    internal: ":back"
+    internal: back
+  }
+  {
+    key: left
+    internal: back
+  }
+  {
+    key: right
+    internal: open_stay
   }
   {
     key: alt-down
     invocation: go
-    internal: ":focus"
+    internal: focus
   }
   {
     invocation: go {path}
-    internal: ":focus {path}"
+    internal: focus {path}
   }
   {
+    key: ctrl-h
     shortcut: ~
-    internal: ":focus ~"
+    internal: focus ~
   }
   {
     invocation: clip
-    internal: ":copy_path"
+    internal: copy_path
     leave_broot: false
   }
   {
@@ -291,6 +300,9 @@ Suffix any regular expression with `/i` to make it case insensitive.
 When the filter is empty,
 enter `?` to see help for all this,
 and browse the built in verbs and descriptions.
+
+You can stack filters by putting an `&` between them,
+as in the screenshot at the top of this page.
 
 ## Verbs
 
@@ -366,7 +378,7 @@ verbs:
 [
   {
     key: enter
-    internal: ":print_path"
+    internal: print_path
     apply_to: directory
   }
   {
@@ -377,7 +389,7 @@ verbs:
   {
     key: alt-enter
     invocation: cd
-    internal: ":print_path"
+    internal: print_path
     apply_to: directory
   }
   {
@@ -395,17 +407,25 @@ but overriding `default_flags` is best done in the CLI invocation
 
 ## Drill down launcher
 
-We create a function `.zle_cd-broot` in `.zshrc`,
-the core of which will be:
+For readability, let's first define a core function in `.zshrc` to simply print a broot-selected folder:
 
 ```zsh
-broot \
-  --color yes \
-  --git-ignored \
-  --show-git-info \
-  --only-folders \
-  --conf ".../select-folder.hjson;.../conf.hjson"
+# -- Select a single folder with broot and print it --
+# Depends: ~/.config/broot/select-folder.hjson
+broot-print-folder () {  # [broot-arg...]
+  emulate -L zsh
+  broot \
+    --conf "${XDG_CONFIG_HOME:-${HOME}/.config}/broot/select-folder.hjson;${XDG_CONFIG_HOME:-${HOME}/.config}/broot/conf.hjson" \
+    --color yes \
+    --git-ignored \
+    --show-git-info \
+    --only-folders \
+    $@
+}
 ```
+
+Now we'll create a function `.zle_cd-broot` in `.zshrc`,
+wrapping `broot-print-folder`.
 
 I bind it to `alt`+`down`,
 to match
@@ -418,14 +438,11 @@ but let's see the whole thing:
 ```zsh
 # -- Folder Navigation: Down --
 # Key: alt+down
-# Depends: ~/.config/broot/select-folder.hjson
+# Depends: broot-print-folder
 # Optional: .zle_redraw-prompt
 .zle_cd-broot () {
   echoti rmkx
-  cd "$(
-    <$TTY broot --color yes --git-ignored --show-git-info --only-folders \
-    --conf "${XDG_CONFIG_HOME:-${HOME}/.config}/broot/select-folder.hjson;${XDG_CONFIG_HOME:-${HOME}/.config}/broot/conf.hjson"
-  )"
+  cd "$(<$TTY broot-print-folder)"
   if (( $+functions[.zle_redraw-prompt] ))  zle .zle_redraw-prompt
   if (( $+functions[_zsh_highlight]     ))  _zsh_highlight
 }
@@ -599,20 +616,28 @@ already partially typed path, using it to:
 - guess a starting folder
 - guess whether we should see hidden files
 
-At its core,
-the launcher will run:
+Let's create a core helper function first,
+just to print broot-selected files:
 
 ```zsh
-broot \
-  --color yes \
-  --cmd "$broot_search" \
-  $show_hidden \
-  --no-sizes \
-  --conf ".../select.hjson;.../conf.hjson" \
-  $start_dir
+# -- Select files with broot and print each on a line --
+# Depends: ~/.config/broot/select.hjson
+broot-print-files () {  # [broot-arg...]
+  emulate -L zsh
+  broot \
+    --conf "${XDG_CONFIG_HOME:-${HOME}/.config}/broot/select.hjson;${XDG_CONFIG_HOME:-${HOME}/.config}/broot/conf.hjson" \
+    --color yes \
+    --git-ignored \
+    --show-git-info \
+    --no-sizes \
+    $@
+}
 ```
 
-It's big, so let's see the whole thing first,
+`--no-sizes` is a compromise for performance.
+
+The new `.zle_insert-path-broot` is big,
+so let's see the whole thing first,
 then take it piece by piece.
 
 One known limitation is that it expects no newlines within your filenames.
@@ -620,7 +645,7 @@ One known limitation is that it expects no newlines within your filenames.
 ```zsh
 # -- Complete current word as path using broot --
 # Key: ctrl+/
-# Depends: ~/.config/broot/select.hjson
+# Depends: broot-print-files
 .zle_insert-path-broot () {
   setopt localoptions extendedglob
 
@@ -662,14 +687,14 @@ One known limitation is that it expects no newlines within your filenames.
     start_dir=${updirs:-.}
   }
 
+  # Collect determined broot arguments
+  local broot_args=($show_hidden $start_dir)
+  if [[ $broot_search ]]  broot_args+=(--cmd "$broot_search")
+
   # Get a location (or not) from broot,
   # using select.hjson config
   echoti rmkx
-  local locations=(${(f)"$(
-    <$TTY broot --color yes --cmd "$broot_search" $show_hidden --no-sizes \
-    --conf "${XDG_CONFIG_HOME:-${HOME}/.config}/broot/select.hjson;${XDG_CONFIG_HOME:-${HOME}/.config}/broot/conf.hjson" \
-    $start_dir
-  )"})
+  local locations=(${(f)"$(<$TTY broot-print-files $broot_args)"})
 
   # Add location to line or restore original partial
   if [[ $locations ]] {
@@ -839,14 +864,8 @@ and we store the lines as an array.
   # Get a location (or not) from broot,
   # using select.hjson config
   echoti rmkx
-  local locations=(${(f)"$(
-    <$TTY broot --color yes --cmd "$broot_search" $show_hidden --no-sizes \
-    --conf "${XDG_CONFIG_HOME:-${HOME}/.config}/broot/select.hjson;${XDG_CONFIG_HOME:-${HOME}/.config}/broot/conf.hjson" \
-    $start_dir
-  )"})
+  local locations=(${(f)"$(<$TTY broot-print-files $broot_args)"})
 ```
-
-`--no-sizes` is a compromise for performance.
 
 ### Insertion
 
@@ -941,7 +960,7 @@ Now we can update our function to:
 zmodload zsh/mapfile
 
 # -- Run broot, cd into pathfile if successful --
-# Depends: zmapfile
+# Depends: zsh/mapfile
 br () {  # [<broot-opt>...]
   emulate -L zsh -o localtraps
 
