@@ -6,6 +6,8 @@ showComments = true
 draft = false
 +++
 
+![A fuzzy filter, content filter, and regex filter walk into a shell...](featured.png)
+
 [Broot](https://dystroy.org/broot/) is a great file manager TUI
 which can be adapted for very specific workflows.
 But it takes some configuration up front to get things going,
