@@ -938,6 +938,11 @@ and forces f-s-h to rescan and recolor the input line, now that it's changed.
 This method only works with `broot>1.33.1`.
 {{< /alert >}}
 
+{{< alert >}}
+This method breaks any verbs relying on the `from_shell` option,
+which relies on `eval`.
+{{< /alert >}}
+
 Instead of `--outcmd`,
 we'll use a new option, `--verb-output`,
 and a new "internal," `write_output`.
